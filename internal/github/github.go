@@ -35,4 +35,3 @@ func FetchReleasesAfter(ctx context.Context, client *github.Client, owner, repo 
 
 	return newReleases, nil
 }
-

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/go-github/github" 
+	"github.com/google/go-github/github"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wt3022/github-release-notifier/internal/db"
