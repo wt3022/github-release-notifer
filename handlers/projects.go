@@ -42,19 +42,12 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 		return
 	}
 
-	tx := dbClient.Create(&project)
-	if tx.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
-		return
-	}
-
-	var createdProject db.Project
-	if err := dbClient.First(&createdProject, project.ID).Error; err != nil {
+	if err := dbClient.Create(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, createdProject)
+	c.JSON(http.StatusCreated, project)
 }
 
 func UpdateProject(c *gin.Context, dbClient *gorm.DB) {
