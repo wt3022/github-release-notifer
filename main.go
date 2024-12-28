@@ -34,18 +34,28 @@ func main() {
 
 	/* プロジェクト */
 	projectRouter := router.Group("/projects")
-	projectRouter.GET("/:id", todo)
-	projectRouter.GET("/", todo)
-	projectRouter.POST("/", todo)
-	projectRouter.PATCH("/", todo)
-	projectRouter.DELETE("/", todo)
+	projectRouter.GET("/:id", func(ctx *gin.Context) {
+		handlers.DetailProject(ctx, dbClient)
+	})
+	projectRouter.GET("/", func(ctx *gin.Context) {
+		handlers.ListProjects(ctx, dbClient)
+	})
+	projectRouter.POST("/", func(c *gin.Context) {
+		handlers.CreateProjects(c, dbClient)
+	})
+	projectRouter.PATCH("/", func(c *gin.Context) {
+		handlers.UpdateProject(c, dbClient)
+	})
+	projectRouter.DELETE("/:id", func(c *gin.Context) {
+		handlers.DeleteProject(c, dbClient)
+	})
 
 	/* 監視リポジトリ */
 	repositoriesRouter := router.Group("/repositories")
 	repositoriesRouter.GET("/:id", todo)
 	repositoriesRouter.GET("/", todo)
 	repositoriesRouter.POST("/", todo)
-	repositoriesRouter.DELETE("/", todo)
+	repositoriesRouter.DELETE("/:id", todo)
 
 	/* 通知 */
 	notificationRouter := router.Group("/notifications")
@@ -54,13 +64,11 @@ func main() {
 	notificationRouter.POST("/:id/test_notification", todo)
 	notificationRouter.POST("/", todo)
 	notificationRouter.PATCH("/", todo)
-	notificationRouter.DELETE("/", todo)
-
+	notificationRouter.DELETE("/:id", todo)
 
 	/* 定期タスク実行
 	* リポジトリの更新通知
-	*/
-
+	 */
 
 	router.Run()
 }
