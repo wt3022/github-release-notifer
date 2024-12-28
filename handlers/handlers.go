@@ -29,7 +29,7 @@ func HomeHandler(c *gin.Context, dbClient *gorm.DB, githubClient *github.Client)
 	}
 
 	for _, repo := range watchRepos {
-		newReleases, err := mygithub.FetchReleasesAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.PublishedAt)
+		newReleases, err := mygithub.FetchReleasesAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastNotificationDate)
 		if err != nil {
 			log.Println(err)
 			continue
