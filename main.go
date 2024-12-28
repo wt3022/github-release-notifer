@@ -65,14 +65,24 @@ func main() {
 		handlers.DeleteRepository(ctx, dbClient)
 	})
 
-	/* 通知 */
+	/* 通知先 */
 	notificationRouter := router.Group("/notifications")
-	notificationRouter.GET("/:id", todo)
-	notificationRouter.GET("/", todo)
+	notificationRouter.GET("/:id", func(ctx *gin.Context) {
+		handlers.DetailNotification(ctx, dbClient)
+	})
+	notificationRouter.GET("/", func(ctx *gin.Context) {
+		handlers.ListNotifications(ctx, dbClient)
+	})
+	notificationRouter.POST("/", func(ctx *gin.Context) {
+		handlers.CreateNotification(ctx, dbClient)
+	})
 	notificationRouter.POST("/:id/test_notification", todo)
-	notificationRouter.POST("/", todo)
-	notificationRouter.PATCH("/", todo)
-	notificationRouter.DELETE("/:id", todo)
+	notificationRouter.PATCH("/", func(ctx *gin.Context) {
+		handlers.UpdateNotification(ctx, dbClient)
+	})
+	notificationRouter.DELETE("/:id", func(ctx *gin.Context) {
+		handlers.DeleteNotification(ctx, dbClient)
+	})
 
 	/* 定期タスク実行
 	* リポジトリの更新通知

@@ -23,6 +23,11 @@ func OpenDB() *gorm.DB {
 		log.Panicln(err)
 	}
 
+	err = db.AutoMigrate(&Notification{})
+	if err != nil {
+		log.Panicln(err)
+	}
+
 	return db
 }
 
