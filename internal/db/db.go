@@ -13,12 +13,12 @@ func OpenDB() *gorm.DB {
 		log.Fatalln("DB接続失敗")
 	}
 
-	err = db.AutoMigrate(&WatchRepository{})
+	err = db.AutoMigrate(&Project{})
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	err = db.AutoMigrate(&Project{})
+	err = db.AutoMigrate(&WatchRepository{})
 	if err != nil {
 		log.Panicln(err)
 	}

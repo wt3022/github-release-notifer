@@ -6,8 +6,8 @@ import (
 
 type Project struct {
 	gorm.Model
-	Name         string       `gorm:"size:256" json:"name" label:"プロジェクト名"`
-	Description  *string      `json:"description" label:"プロジェクト説明"`
-	Notification Notification `json:"notification" label:"通知設定"`
+	Name              string            `json:"name" label:"プロジェクト名" gorm:"size:256" binding:"required"`
+	Description       *string           `json:"description" label:"プロジェクト説明"`
+	Notification      *Notification     `json:"notification" label:"通知設定"`
 	WatchRepositories []WatchRepository `json:"watch_repositories" label:"監視リポジトリ"`
 }
