@@ -23,3 +23,15 @@ go.work.sum
 
 # env file
 .env
+
+# DB file
+*.DB
+
+
+# git vscode mac
+.git
+.vscode
+.DS_Store
+
+# air
+tmp

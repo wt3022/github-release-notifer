@@ -1,0 +1,7 @@
+# .air.toml
+command = "go run main.go"
+root = "."
+tmp_dir = "tmp"
+include_dir = [
+  "main.go",
+]
