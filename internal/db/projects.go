@@ -9,4 +9,5 @@ type Project struct {
 	Name         string       `gorm:"size:256" json:"name" label:"プロジェクト名"`
 	Description  *string      `json:"description" label:"プロジェクト説明"`
 	Notification Notification `json:"notification" label:"通知設定"`
+	WatchRepositories []WatchRepository `json:"watch_repositories" label:"監視リポジトリ"`
 }
