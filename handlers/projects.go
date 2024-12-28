@@ -17,7 +17,7 @@ func ListProjects(c *gin.Context, dbClient *gorm.DB) {
 		return
 	}
 
-	c.JSON(200, projects)
+	c.JSON(http.StatusOK, projects)
 }
 
 func DetailProject(c *gin.Context, dbClient *gorm.DB) {
