@@ -30,12 +30,3 @@ func OpenDB() *gorm.DB {
 
 	return db
 }
-
-func GetWatchRepositories(db *gorm.DB) ([]WatchRepository, error) {
-	var watchRepos []WatchRepository
-	result := db.Find(&watchRepos)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return watchRepos, nil
-}

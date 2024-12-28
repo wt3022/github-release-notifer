@@ -4,12 +4,14 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wt3022/github-release-notifier/handlers"
 	"github.com/wt3022/github-release-notifier/internal/db"
 	"github.com/wt3022/github-release-notifier/internal/env"
 	"github.com/wt3022/github-release-notifier/internal/github"
+	"github.com/wt3022/github-release-notifier/internal/tasks"
 )
 
 func todo(c *gin.Context) {
@@ -26,9 +28,6 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.GET("/test", func(c *gin.Context) {
-		handlers.HomeHandler(c, dbClient, githubClient)
-	})
 
 	/* TODO: ユーザー周りのAPI定義 */
 
@@ -84,9 +83,13 @@ func main() {
 		handlers.DeleteNotification(ctx, dbClient)
 	})
 
-	/* 定期タスク実行
-	* リポジトリの更新通知
-	 */
+	/* 定期タスク実行 (15秒おき) */
+	go func() {
+		ticker := time.NewTicker(15 * time.Second)
+		for range ticker.C {
+			tasks.WatchRepositoryRelease(dbClient, githubClient)
+		}
+	}()
 
 	router.Run()
 }

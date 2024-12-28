@@ -1,26 +1,26 @@
-package handlers
+package tasks
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
+
 	"time"
 
 	"github.com/google/go-github/github"
 
-	"github.com/gin-gonic/gin"
 	"github.com/wt3022/github-release-notifier/internal/db"
 	mygithub "github.com/wt3022/github-release-notifier/internal/github"
 	"gorm.io/gorm"
 )
 
-func HomeHandler(c *gin.Context, dbClient *gorm.DB, githubClient *github.Client) {
-	watchRepos, err := db.GetWatchRepositories(dbClient)
-	if err != nil {
-		log.Printf("データベースからのリポジトリ取得に失敗しました: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"エラー": "リポジトリ情報の取得に失敗しました"})
-		return
+func WatchRepositoryRelease(dbClient *gorm.DB, githubClient *github.Client) {
+	log.Printf("リポジトリの処理を開始します\n")
+
+	var watchRepos []db.WatchRepository
+
+	if err := dbClient.Find(&watchRepos).Error; err != nil {
+		log.Fatalf("データベースからのリポジトリの取得に失敗しました: %v", err)
 	}
 
 	jst, err := time.LoadLocation("Asia/Tokyo")
@@ -44,6 +44,7 @@ func HomeHandler(c *gin.Context, dbClient *gorm.DB, githubClient *github.Client)
 			}
 			fmt.Printf("-----------------------------\n")
 
+
 			// データベースの更新
 			latestPublishedAt := newReleases[0].PublishedAt.Time
 			for _, release := range newReleases {
@@ -51,17 +52,27 @@ func HomeHandler(c *gin.Context, dbClient *gorm.DB, githubClient *github.Client)
 					latestPublishedAt = release.PublishedAt.Time
 				}
 			}
-			err := dbClient.Model(&repo).Update("PublishedAt", latestPublishedAt).Error
+			err := dbClient.Model(&repo).Update("LastNotificationDate", latestPublishedAt).Error
 			if err != nil {
 				log.Printf("データベースの更新に失敗しました (%s/%s): %v", repo.Owner, repo.Name, err)
 			}
+			
+
+			// 通知を送信
+			// プロジェクトの通知設定を取得
+			notification := db.Notification{}
+			err = dbClient.Model(&repo).Association("Notification").Find(&notification)
+			if err != nil {
+				log.Printf("通知設定の取得に失敗しました (%s/%s): %v", repo.Owner, repo.Name, err)
+			} else {
+				// 一旦プロジェクトIDとリポジトリID、通知設定を出力
+				log.Printf("プロジェクトID: %d, リポジトリID: %d, 通知設定: %s", repo.ProjectID, repo.ID, notification.Type)
+			}			
+
 		} else {
 			fmt.Printf("リポジトリ %s/%s に新しいリリースはありません\n", repo.Owner, repo.Name)
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"メッセージ": "リポジトリの処理が完了しました",
-		"件数":    len(watchRepos),
-	})
+	fmt.Printf("リポジトリの処理が完了しました\n")
 }
