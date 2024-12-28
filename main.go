@@ -52,10 +52,18 @@ func main() {
 
 	/* 監視リポジトリ */
 	repositoriesRouter := router.Group("/repositories")
-	repositoriesRouter.GET("/:id", todo)
-	repositoriesRouter.GET("/", todo)
-	repositoriesRouter.POST("/", todo)
-	repositoriesRouter.DELETE("/:id", todo)
+	repositoriesRouter.GET("/:id", func(ctx *gin.Context) {
+		handlers.DetailRepository(ctx, dbClient)
+	})
+	repositoriesRouter.GET("/", func(ctx *gin.Context) {
+		handlers.ListRepositories(ctx, dbClient)
+	})
+	repositoriesRouter.POST("/", func(ctx *gin.Context) {
+		handlers.CreateRepository(ctx, dbClient, githubClient)
+	})
+	repositoriesRouter.DELETE("/:id", func(ctx *gin.Context) {
+		handlers.DeleteRepository(ctx, dbClient)
+	})
 
 	/* 通知 */
 	notificationRouter := router.Group("/notifications")
