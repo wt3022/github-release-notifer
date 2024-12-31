@@ -5,14 +5,33 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/wt3022/github-release-notifier/internal/db"
+	"github.com/wt3022/github-release-notifier/internal/utils"
 	"gorm.io/gorm"
 )
 
 func ListProjects(c *gin.Context, dbClient *gorm.DB) {
-	/* プロジェクト一覧を取得します */
+	/*
+		プロジェクト一覧を取得します
+		クエリパラメータ:
+			name: プロジェクト名の部分一致
+			created_at__gte: 特定の作成日より前
+			created_at__lte: 特定の作成日より後
+			updated_at__gte: 特定の更新日より前
+			updated_at__lte: 特定の更新日より後
+			page: ページ番号
+			page_size: ページあたりのアイテム数
+	*/
 	var projects []db.Project
 
-	if err := dbClient.Find(&projects).Error; err != nil {
+	name := c.Query("name")
+
+	query := utils.BuildQuery(c, dbClient)
+
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	if err := query.Find(&projects).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
