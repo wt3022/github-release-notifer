@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/wt3022/github-release-notifier/handlers"
 	"github.com/wt3022/github-release-notifier/internal/db"
 	"github.com/wt3022/github-release-notifier/internal/env"
 	"github.com/wt3022/github-release-notifier/internal/github"
-	"github.com/wt3022/github-release-notifier/internal/tasks"
+	// "github.com/wt3022/github-release-notifier/internal/tasks"
 )
 
 func todo(c *gin.Context) {
@@ -28,6 +29,15 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+        AllowAllOrigins: true,
+        AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
 
 	/* TODO: ユーザー周りのAPI定義 */
 
@@ -84,12 +94,12 @@ func main() {
 	})
 
 	/* 定期タスク実行 (15秒おき) */
-	go func() {
-		ticker := time.NewTicker(15 * time.Second)
-		for range ticker.C {
-			tasks.WatchRepositoryRelease(dbClient, githubClient)
-		}
-	}()
+	// go func() {
+	// 	ticker := time.NewTicker(15 * time.Second)
+	// 	for range ticker.C {
+	// 		tasks.WatchRepositoryRelease(dbClient, githubClient)
+	// 	}
+	// }()
 
 	router.Run()
 }
