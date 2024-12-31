@@ -31,29 +31,6 @@ func DetailNotification(ctx *gin.Context, dbClient *gorm.DB) {
 	ctx.JSON(http.StatusOK, notification)
 }
 
-func CreateNotification(ctx *gin.Context, dbClient *gorm.DB) {
-	var notification db.Notification
-
-	if err := ctx.ShouldBindJSON(&notification); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// プロジェクトが存在するか確認
-	var project db.Project
-	if err := dbClient.First(&project, notification.ProjectID).Error; err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "プロジェクトが存在しません"})
-		return
-	}
-
-	if err := dbClient.Create(&notification).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, notification)
-}
-
 func UpdateNotification(ctx *gin.Context, dbClient *gorm.DB) {
 	var notification db.Notification
 

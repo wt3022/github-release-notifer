@@ -31,13 +31,13 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-        AllowAllOrigins: true,
-        AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
-    }))
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	/* TODO: ユーザー周りのAPI定義 */
 
@@ -81,9 +81,6 @@ func main() {
 	})
 	notificationRouter.GET("/", func(ctx *gin.Context) {
 		handlers.ListNotifications(ctx, dbClient)
-	})
-	notificationRouter.POST("/", func(ctx *gin.Context) {
-		handlers.CreateNotification(ctx, dbClient)
 	})
 	notificationRouter.POST("/:id/test_notification", todo)
 	notificationRouter.PATCH("/", func(ctx *gin.Context) {

@@ -48,7 +48,7 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 		return
 	}
 
-	defer func ()  {
+	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
@@ -69,10 +69,10 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 	}
 
 	if err := tx.Commit().Error; err != nil {
-        tx.Rollback()
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusCreated, projectRequest)
 }
