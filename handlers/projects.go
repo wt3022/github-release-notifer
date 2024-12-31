@@ -35,19 +35,46 @@ func DetailProject(c *gin.Context, dbClient *gorm.DB) {
 
 func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 	/* プロジェクトを作成します */
-	var project db.Project
+	var projectRequest db.Project
 
-	if err := c.ShouldBindJSON(&project); err != nil {
+	if err := c.ShouldBindJSON(&projectRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := dbClient.Create(&project).Error; err != nil {
+	tx := dbClient.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
+	}
+
+	defer func ()  {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 通知設定の作成後にプロジェクトを作成
+	if err := tx.Create(&projectRequest.Notification).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, project)
+	// プロジェクトを作成
+	if err := tx.Create(&projectRequest).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+        tx.Rollback()
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+	c.JSON(http.StatusCreated, projectRequest)
 }
 
 func UpdateProject(c *gin.Context, dbClient *gorm.DB) {

@@ -15,7 +15,7 @@ const (
 
 type Notification struct {
 	gorm.Model
-	ProjectID uint             `json:"project" label:"プロジェクトID" gorm:"unique;onDelete:CASCADE" binding:"required"`
+	ProjectID uint             `json:"project" label:"プロジェクトID" gorm:"unique;onDelete:CASCADE"`
 	Type      NotificationType `json:"type" label:"通知方法" gorm:"type:varchar(20);not null" binding:"required"`
 }
 
