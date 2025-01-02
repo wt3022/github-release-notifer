@@ -79,19 +79,7 @@ func main() {
 
 	/* 通知先 */
 	notificationRouter := router.Group("/notifications")
-	notificationRouter.GET("/:id", func(ctx *gin.Context) {
-		handlers.DetailNotification(ctx, dbClient)
-	})
-	notificationRouter.GET("/", func(ctx *gin.Context) {
-		handlers.ListNotifications(ctx, dbClient)
-	})
 	notificationRouter.POST("/:id/test_notification", todo)
-	notificationRouter.PATCH("/", func(ctx *gin.Context) {
-		handlers.UpdateNotification(ctx, dbClient)
-	})
-	notificationRouter.DELETE("/:id", func(ctx *gin.Context) {
-		handlers.DeleteNotification(ctx, dbClient)
-	})
 
 	/* 定期タスク実行 (15秒おき) */
 	// go func() {

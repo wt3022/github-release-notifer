@@ -40,14 +40,25 @@ func ListProjects(c *gin.Context, dbClient *gorm.DB) {
 }
 
 func DetailProject(c *gin.Context, dbClient *gorm.DB) {
-	/* プロジェクトの詳細を取得します */
+	/*
+		プロジェクトの詳細を取得します
+		その際に通知情報も展開します
+	*/
 	var project db.Project
+	var notification db.Notification
 
 	id := c.Param("id")
 	if err := dbClient.First(&project, id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	if err := dbClient.First(&notification, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	project.Notification = &notification
 
 	c.JSON(http.StatusOK, project)
 }
@@ -61,14 +72,9 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 		return
 	}
 
-	if err := projectRequest.Validate(dbClient); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	tx := dbClient.Begin()
 	if tx.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": tx.Error.Error()})
 		return
 	}
 
@@ -102,20 +108,66 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 }
 
 func UpdateProject(c *gin.Context, dbClient *gorm.DB) {
-	/* プロジェクトを更新します */
 	var project db.Project
 
-	if err := c.ShouldBindJSON(&project); err != nil {
+	// リクエストボディの内容を取得
+	var updateData db.Project
+	if err := c.ShouldBindJSON(&updateData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := dbClient.Save(&project).Error; err != nil {
+	if err := dbClient.Preload("Notification").First(&project, updateData.ID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "プロジェクトが見つかりません"})
+		return
+	}
+
+	tx := dbClient.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// プロジェクトの更新
+	if err := tx.Model(&project).Updates(map[string]interface{}{
+		"name":        updateData.Name,
+		"description": updateData.Description,
+	}).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, project)
+	// 通知設定の更新（既存の通知設定のIDを使用）
+	if err := tx.Model(&project.Notification).Updates(map[string]interface{}{
+		"type": updateData.Notification.Type,
+	}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// トランザクション内で更新後のデータを取得
+	var updatedProject db.Project
+	if err := tx.Preload("Notification").First(&updatedProject, updateData.ID).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedProject)
 }
 
 func DeleteProject(c *gin.Context, dbClient *gorm.DB) {
