@@ -58,6 +58,9 @@ func main() {
 	projectRouter.DELETE("/:id", func(c *gin.Context) {
 		handlers.DeleteProject(c, dbClient)
 	})
+	projectRouter.DELETE("/bulk_delete", func(c *gin.Context) {
+		handlers.BulkDeleteProjects(c, dbClient)
+	})
 
 	/* 監視リポジトリ */
 	repositoriesRouter := router.Group("/repositories")

@@ -61,6 +61,11 @@ func CreateProjects(c *gin.Context, dbClient *gorm.DB) {
 		return
 	}
 
+	if err := projectRequest.Validate(dbClient); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	tx := dbClient.Begin()
 	if tx.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
@@ -119,6 +124,36 @@ func DeleteProject(c *gin.Context, dbClient *gorm.DB) {
 
 	id := c.Param("id")
 	if err := dbClient.Delete(&project, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func BulkDeleteProjects(c *gin.Context, dbClient *gorm.DB) {
+	/* プロジェクトを一括削除します */
+	var projectIds []int
+
+	if err := c.ShouldBindJSON(&projectIds); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := dbClient.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
+	}
+
+	if err := tx.Delete(&db.Project{}, projectIds).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
