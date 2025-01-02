@@ -17,7 +17,6 @@ type Project struct {
 	WatchRepositories []WatchRepository `json:"watch_repositories" label:"監視リポジトリ"`
 }
 
-
 func (p *Project) Validate(tx *gorm.DB) (err error) {
 	var count int64
 	tx.Model(&Project{}).Where("name = ?", p.Name).Count(&count)
