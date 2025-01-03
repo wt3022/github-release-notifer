@@ -118,7 +118,7 @@ func sendNotification(dbClient *gorm.DB, repo db.WatchRepository) {
 		log.Printf("通知設定の取得に失敗しました (%s/%s): %v", repo.Owner, repo.Name, err)
 		return
 	}
-	
+
 	// 一旦プロジェクトIDとリポジトリID、通知設定を出力
 	log.Printf("プロジェクトID: %d, リポジトリID: %d, 通知設定: %s", repo.ProjectID, repo.ID, notification.Type)
 }

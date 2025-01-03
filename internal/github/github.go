@@ -36,9 +36,8 @@ func FetchReleasesAfter(ctx context.Context, client *github.Client, owner, repo 
 	return newReleases, nil
 }
 
-
 type TagRelease struct {
-	Name string
+	Name        string
 	PublishedAt time.Time
 }
 
@@ -59,7 +58,7 @@ func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, rep
 		}
 		if commit.Author.Date.After(after) {
 			tagReleases = append(tagReleases, TagRelease{
-				Name: *tag.Name,
+				Name:        *tag.Name,
 				PublishedAt: *commit.Author.Date,
 			})
 		}

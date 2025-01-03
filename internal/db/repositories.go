@@ -5,8 +5,9 @@ import (
 )
 
 type WatchType string
+
 const (
-	WatchTypeTag WatchType = "tag"
+	WatchTypeTag     WatchType = "tag"
 	WatchTypeRelease WatchType = "release"
 )
 
@@ -21,4 +22,3 @@ type WatchRepository struct {
 	LastPublishedAt      time.Time `json:"last_published_at" label:"最終公開日" gorm:"default:CURRENT_TIMESTAMP"`
 	ProjectID            uint      `json:"project_id" label:"プロジェクトID" binding:"required"`
 }
-
