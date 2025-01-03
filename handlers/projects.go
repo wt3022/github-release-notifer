@@ -42,23 +42,15 @@ func ListProjects(c *gin.Context, dbClient *gorm.DB) {
 func DetailProject(c *gin.Context, dbClient *gorm.DB) {
 	/*
 		プロジェクトの詳細を取得します
-		その際に通知情報も展開します
+		その際に通知情報と監視リポジトリも展開します
 	*/
 	var project db.Project
-	var notification db.Notification
 
 	id := c.Param("id")
-	if err := dbClient.First(&project, id).Error; err != nil {
+	if err := dbClient.Preload("Notification").Preload("WatchRepositories").First(&project, id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	if err := dbClient.First(&notification, id).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	project.Notification = &notification
 
 	c.JSON(http.StatusOK, project)
 }

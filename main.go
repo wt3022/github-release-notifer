@@ -12,7 +12,7 @@ import (
 	"github.com/wt3022/github-release-notifier/internal/db"
 	"github.com/wt3022/github-release-notifier/internal/env"
 	"github.com/wt3022/github-release-notifier/internal/github"
-	// "github.com/wt3022/github-release-notifier/internal/tasks"
+	"github.com/wt3022/github-release-notifier/internal/tasks"
 )
 
 func todo(c *gin.Context) {
@@ -81,13 +81,13 @@ func main() {
 	notificationRouter := router.Group("/notifications")
 	notificationRouter.POST("/:id/test_notification", todo)
 
-	/* 定期タスク実行 (15秒おき) */
-	// go func() {
-	// 	ticker := time.NewTicker(15 * time.Second)
-	// 	for range ticker.C {
-	// 		tasks.WatchRepositoryRelease(dbClient, githubClient)
-	// 	}
-	// }()
+	/* 定期タスク実行 (20秒おき) */
+	go func() {
+		ticker := time.NewTicker(20 * time.Second)
+		for range ticker.C {
+			tasks.WatchRepositoryRelease(dbClient, githubClient)
+		}
+	}()
 
 	router.Run()
 }

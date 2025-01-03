@@ -25,7 +25,7 @@ func FetchReleasesAfter(ctx context.Context, client *github.Client, owner, repo 
 		return nil, fmt.Errorf("%s/%s のリリース情報の取得に失敗しました: %v", owner, repo, err)
 	}
 
-	// after 以降のリリースのみにフィルタリング
+	// 与えられた日付以降のリリースのみを取得
 	var newReleases []*github.RepositoryRelease
 	for _, release := range releases {
 		if release.PublishedAt != nil && release.PublishedAt.Time.After(after) {
@@ -34,4 +34,36 @@ func FetchReleasesAfter(ctx context.Context, client *github.Client, owner, repo 
 	}
 
 	return newReleases, nil
+}
+
+
+type TagRelease struct {
+	Name string
+	PublishedAt time.Time
+}
+
+func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, repo string, after time.Time) ([]TagRelease, error) {
+	/* 与えられた日付以降に作成されたタグを取得します */
+
+	// タグの一覧を取得
+	tags, _, err := client.Repositories.ListTags(ctx, owner, repo, nil)
+	if err != nil {
+		return []TagRelease{}, fmt.Errorf("%s/%s のタグ情報の取得に失敗しました: %v", owner, repo, err)
+	}
+	//　コミットログから作成日を取得
+	var tagReleases []TagRelease
+	for _, tag := range tags {
+		commit, _, err := client.Git.GetCommit(ctx, owner, repo, *tag.Commit.SHA)
+		if err != nil {
+			return nil, fmt.Errorf("%s/%s のコミット情報の取得に失敗しました: %v", owner, repo, err)
+		}
+		if commit.Author.Date.After(after) {
+			tagReleases = append(tagReleases, TagRelease{
+				Name: *tag.Name,
+				PublishedAt: *commit.Author.Date,
+			})
+		}
+	}
+
+	return tagReleases, nil
 }
