@@ -1,0 +1,13 @@
+text.db
+README.md
+project.env
+main
+*.tar
+*.tar.gz
+.gitignore
+.dockerignore
+.air.toml
+tmp
+.vscode
+.git
+*.sh

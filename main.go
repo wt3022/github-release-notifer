@@ -30,6 +30,9 @@ func main() {
 
 	router := gin.Default()
 
+	router.RedirectTrailingSlash = true
+	router.RedirectFixedPath = true
+
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
@@ -55,9 +58,6 @@ func main() {
 	projectRouter.PATCH("/", func(c *gin.Context) {
 		handlers.UpdateProject(c, dbClient)
 	})
-	projectRouter.DELETE("/:id", func(c *gin.Context) {
-		handlers.DeleteProject(c, dbClient)
-	})
 	projectRouter.DELETE("/bulk_delete", func(c *gin.Context) {
 		handlers.BulkDeleteProjects(c, dbClient)
 	})
@@ -73,21 +73,27 @@ func main() {
 	repositoriesRouter.POST("/", func(ctx *gin.Context) {
 		handlers.CreateRepository(ctx, dbClient, githubClient)
 	})
-	repositoriesRouter.DELETE("/:id", func(ctx *gin.Context) {
-		handlers.DeleteRepository(ctx, dbClient)
+	repositoriesRouter.DELETE("/bulk_delete", func(ctx *gin.Context) {
+		handlers.BulkDeleteRepositories(ctx, dbClient)
 	})
 
 	/* 通知先 */
 	notificationRouter := router.Group("/notifications")
 	notificationRouter.POST("/:id/test_notification", todo)
 
+	router.GET("/test", func(c *gin.Context) {
+		tasks.WatchRepositoryRelease(dbClient, githubClient)
+
+		c.String(http.StatusOK, "test")
+	})
+
 	/* 定期タスク実行 (20秒おき) */
-	go func() {
-		ticker := time.NewTicker(20 * time.Second)
-		for range ticker.C {
-			tasks.WatchRepositoryRelease(dbClient, githubClient)
-		}
-	}()
+	// go func() {
+	// 	ticker := time.NewTicker(20 * time.Second)
+	// 	for range ticker.C {
+	// 		tasks.WatchRepositoryRelease(dbClient, githubClient)
+	// 	}
+	// }()
 
 	router.Run()
 }

@@ -37,7 +37,7 @@ func processRepository(dbClient *gorm.DB, githubClient *github.Client, repo db.W
 	// リリース情報の取得
 
 	if repo.WatchType == db.WatchTypeRelease {
-		newReleases, err := mygithub.FetchReleasesAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastNotificationDate)
+		newReleases, err := mygithub.FetchReleasesAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastPublishedAt)
 		if err != nil {
 			log.Println(err)
 			return
@@ -52,7 +52,7 @@ func processRepository(dbClient *gorm.DB, githubClient *github.Client, repo db.W
 		}
 	} else if repo.WatchType == db.WatchTypeTag {
 		// タグ情報の取得
-		tagRelease, err := mygithub.FetchTagReleaseAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastNotificationDate)
+		tagRelease, err := mygithub.FetchTagReleaseAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastPublishedAt)
 		if err != nil {
 			log.Println(err)
 			return
