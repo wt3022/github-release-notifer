@@ -22,3 +22,9 @@ type WatchRepository struct {
 	LastPublishedAt      time.Time `json:"last_published_at" label:"最終公開日" gorm:"default:CURRENT_TIMESTAMP"`
 	ProjectID            uint      `json:"project_id" label:"プロジェクトID" binding:"required"`
 }
+
+type Commit struct {
+	ID         uint      `gorm:"primarykey"`
+	SHA        string    `json:"sha" label:"SHA"`
+	AuthorDate time.Time `json:"author_date" label:"作成日"`
+}
