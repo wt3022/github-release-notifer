@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -33,6 +34,11 @@ func FetchReleasesAfter(ctx context.Context, client *github.Client, owner, repo 
 		}
 	}
 
+	// PublishedAtを降順にソート
+	sort.Slice(newReleases, func(i, j int) bool {
+		return newReleases[i].PublishedAt.Time.After(newReleases[j].PublishedAt.Time)
+	})
+
 	return newReleases, nil
 }
 
@@ -45,10 +51,11 @@ func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, rep
 	/* 与えられた日付以降に作成されたタグを取得します */
 
 	// タグの一覧を取得
-	tags, _, err := client.Repositories.ListTags(ctx, owner, repo, nil)
+	tags, _, err := client.Repositories.ListTags(ctx, owner, repo, &github.ListOptions{PerPage: 10})
 	if err != nil {
 		return []TagRelease{}, fmt.Errorf("%s/%s のタグ情報の取得に失敗しました: %v", owner, repo, err)
 	}
+
 	//　コミットログから作成日を取得
 	var tagReleases []TagRelease
 	for _, tag := range tags {
@@ -62,6 +69,11 @@ func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, rep
 				PublishedAt: *commit.Author.Date,
 			})
 		}
+
+		// PublishedAtを降順にソート
+		sort.Slice(tagReleases, func(i, j int) bool {
+			return tagReleases[i].PublishedAt.After(tagReleases[j].PublishedAt)
+		})
 	}
 
 	return tagReleases, nil

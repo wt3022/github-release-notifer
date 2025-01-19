@@ -35,3 +35,8 @@ go.work.sum
 
 # air
 tmp
+
+deploy.sh
+
+*.tar.gz
+*.tar

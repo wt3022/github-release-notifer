@@ -87,12 +87,29 @@ func CreateRepository(c *gin.Context, dbClient *gorm.DB, githubClient *github.Cl
 	c.JSON(http.StatusCreated, repository)
 }
 
-func DeleteRepository(c *gin.Context, dbClient *gorm.DB) {
-	/* リポジトリを削除します */
-	var repository db.WatchRepository
+func BulkDeleteRepositories(c *gin.Context, dbClient *gorm.DB) {
+	/* リポジトリを一括削除します */
+	var repositoryIds []int
 
-	id := c.Param("id")
-	if err := dbClient.Delete(&repository, id).Error; err != nil {
+	if err := c.ShouldBindJSON(&repositoryIds); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := dbClient.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
+	}
+
+	if err := tx.Delete(&db.WatchRepository{}, repositoryIds).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
