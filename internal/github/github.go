@@ -78,7 +78,7 @@ func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, rep
 	/* 与えられた日付以降に作成されたタグを取得します */
 
 	// タグの一覧を取得
-	tags, _, err := client.Repositories.ListTags(ctx, owner, repo, nil)
+	tags, _, err := client.Repositories.ListTags(ctx, owner, repo, &github.ListOptions{PerPage: 10})
 	if err != nil {
 		return []TagRelease{}, fmt.Errorf("%s/%s のタグ情報の取得に失敗しました: %v", owner, repo, err)
 	}
@@ -107,6 +107,11 @@ func FetchTagReleaseAfter(ctx context.Context, client *github.Client, owner, rep
 				PublishedAt: *commit.Author.Date,
 			})
 		}
+
+		// PublishedAtを降順にソート
+		sort.Slice(tagReleases, func(i, j int) bool {
+			return tagReleases[i].PublishedAt.After(tagReleases[j].PublishedAt)
+		})
 	}
 
 	// PublishedAtを降順にソート

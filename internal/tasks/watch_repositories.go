@@ -84,6 +84,7 @@ func processRepository(dbClient *gorm.DB, githubClient *github.Client, repo db.W
 			fmt.Printf("リポジトリ %s/%s に新しいリリースはありません\n", repo.Owner, repo.Name)
 		}
 	} else if repo.WatchType == db.WatchTypeTag {
+		// タグ情報の取得
 		tagRelease, err := mygithub.FetchTagReleaseAfter(context.Background(), githubClient, repo.Owner, repo.Name, repo.LastPublishedAt)
 		if err != nil {
 			log.Println(err)
