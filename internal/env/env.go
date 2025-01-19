@@ -13,7 +13,13 @@ func LoadConfig() Config {
 		log.Fatalf("環境ファイルの読み込みに失敗しました: %v", err)
 	}
 	return Config{
-		Env:   os.Getenv("GO_ENV"),
-		Token: os.Getenv("GITHUB_TOKEN"),
+		Env:            os.Getenv("GO_ENV"),
+		GithubToken:    os.Getenv("GITHUB_TOKEN"),
+		ProductionMode: os.Getenv("PRODUCTION_MODE") == "true",
+		EmailConfig: EmailConfig{
+			SMTPHost:  os.Getenv("SMTP_HOST"),
+			SMTPPort:  os.Getenv("SMTP_PORT"),
+			FromEmail: os.Getenv("FROM_EMAIL"),
+		},
 	}
 }

@@ -23,7 +23,7 @@ func main() {
 	config := env.LoadConfig()
 	dbClient := db.OpenDB()
 
-	githubClient, err := github.OpenGitHubClient(context.Background(), config.Token)
+	githubClient, err := github.OpenGitHubClient(context.Background(), config.GithubToken)
 	if err != nil {
 		log.Fatalf("GitHubクライアントの初期化に失敗しました: %v", err)
 	}
