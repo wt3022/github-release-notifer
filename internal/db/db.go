@@ -5,10 +5,13 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func OpenDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("text.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("text.db"), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent), // ログを無効化
+	})
 	if err != nil {
 		log.Fatalln("DB接続失敗")
 	}
